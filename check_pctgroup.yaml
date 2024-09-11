@@ -1,0 +1,7 @@
+- nagios:
+    dev:
+      apikey: <your-api-key>
+      url: <fqdn/ip>
+    prd:
+      apikey: <your-api-key>
+      url: <fqdn/ip>
