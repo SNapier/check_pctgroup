@@ -1,0 +1,6 @@
+#Version 0.0.1
+1. Initial Release
+
+#Version 0.0.2
+1. Modifed the formatting of the exit message.
+2. Set standard exit message across OK, Warning, Critical states.

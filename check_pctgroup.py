@@ -8,7 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "check_pctgroup"
-cversion = "0.0.1"
+cversion = "0.0.2"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 ##NAGIOSXI DIRECT API CALL
@@ -139,24 +139,28 @@ if __name__ == "__main__" :
         ##GET THE PERCENTAGE OF DOWN HOSTS
         dwn = (float(stats["recordcount"]) / totalhost * 100)
         
-        ##EVALUATE THE RETURNED DATA
+        ##EVALUATE THE RETURNED DATA AND EXIT
+        ##I CREATE THE EXIT MESSAGE FOR EACH STATE IN THE CASE THE DATA PROVIDED FOR EACH STATE
+        ##NEEDS TO HAVE A DIFFERENT SERVICE OUTPUT
+
         ###FIRST IS WORSE
         if(int(dwn) >= int(meta.critical)):
             stateid = 2
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% members down.'.format(state,meta.hostgroup,dwn))
+            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
             
         ###WARNINING SHOULD BE OPTIONAL SO HERE WE ONLY PROCESS FOR WARNING IF PRESENT
         elif meta.warning and ((int(dwn) < int(meta.critical)) and (int(dwn) >= int(meta.warning))):
             stateid = 1
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% members down.'.format(state,meta.hostgroup,dwn))
+            msg = ('{} - Hostgroup {} has {}% for {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
 
         ###NOT WARNING NOT CRITICAL IT"S OK
         else:
+            #EXIT MESSAGE ENHANCEMENT
             stateid = 0
             state = checkStateFromCode(stateid)
-            msg = ('{} - All {} members of {} are UP.'.format(state,totalhost,meta.hostgroup))
+            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
         
         ###NOT EVERYONE WANTS PERFDATA (WHY?)
         if meta.perfdata:
@@ -168,6 +172,7 @@ if __name__ == "__main__" :
             msg = msg + perfdata
     
     #UNKNOWNS SERVE A PURPOSE (USE THEM WISELY)
+    ##EXIT WITH ERROR MESSAGE 
     except Exception as e:
         stateid = 3
         state = checkStateFromCode(stateid)
