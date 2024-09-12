@@ -8,7 +8,7 @@ A monitoring plugin to check status of hostgroup members that are in a down stat
 4. Upload both the script and yaml file to the NagiosXI Instance ```/usr/local/nagios/libexec/``` directory.
 5. Create the NagiosXI command for check_pctgroup
 ```bash
-$USER1$/check_pctgroup.py -e $ARG1$ --hostgroup "$ARG2$" -c $ARG3$ $ARG4$ 
+pyhon3 $USER1$/check_pctgroup.py -e $ARG1$ --hostgroup "$ARG2$" -c $ARG3$ $ARG4$ 
 ```
 6. Create a Service Check to utilize the check_pctgroup command.
   * $ARG1$ contains the nagiosxi environment (dev/prd)
