@@ -1,4 +1,4 @@
-import requests, sys, argparse, os, json, yaml
+import requests, sys, argparse, os, json, yaml,decimal
 #NAGIOSXI PLUGIN TO ALERT WHEN X PERCENT OF A HOSTGROUP ARE IN A DOWN STATE
 #SNAPIER
 
@@ -8,7 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "check_pctgroup"
-cversion = "0.0.2"
+cversion = "0.0.3"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 ##NAGIOSXI DIRECT API CALL
@@ -117,6 +117,7 @@ if __name__ == "__main__" :
         ##NAGIOS API CREDS
         auth = nagiosxiAPICreds(meta)
 
+        
         ##GET THE HOSTGROUPMEMBERS FOR THE TARGET GROUP
         modhg = "&hostgroup_name={}".format(meta.hostgroup)
         hostgm = nagiosxiGenericAPI("objects","hostgroupmembers",modhg,"get",auth["url"],auth["apikey"])
@@ -124,43 +125,49 @@ if __name__ == "__main__" :
 
         ##BUILD THE LIST 
         memlst = list()
-        totalhost = 0
+        hostlistcnt = 0
         members = hd["hostgroup"][0]["members"]['host']
         for i in members:
             memlst.append(i["host_name"])
-            totalhost += 1
-        
-        ##GET STATUS OF the LIST OF HOSTGROUP MEMBERS
-        nhl = ','.join(memlst)
-        modhgm = "&host_name=in:{}&current_state=1".format(nhl)
-        hoststats = nagiosxiGenericAPI("objects","hoststatus",modhgm,"get",auth["url"],auth["apikey"])
+            hostlistcnt += 1
+            
+        #TRYING TO MAKE IT MORE EFFICIENT USING ONE SINGLE HOSTSTATUS GRAB
+        dwncnt = 0
+        hoststats = nagiosxiGenericAPI("objects","hoststatus","","get",auth["url"],auth["apikey"])
         stats = hoststats.json()
-
-        ##GET THE PERCENTAGE OF DOWN HOSTS
-        dwn = (float(stats["recordcount"]) / totalhost * 100)
+        totalhost = stats["recordcount"]
+        for h in stats["hoststatus"]:
+            if h["host_name"] in memlst and h["current_state"] == 1 and h["current_check_attempt"] >= h["max_check_attempts"]:
+                dwncnt += 1    
         
+        ##GET THE PERCENTAGE OF DOWN HOSTS
+        dwn = (float(dwncnt) / hostlistcnt * 100)
+        
+        #ROUND PERCENTAGE TO ACCOUNT FOR LARGE HOST COUNT
+        dwnpct = round(dwn,2)
+
         ##EVALUATE THE RETURNED DATA AND EXIT
         ##I CREATE THE EXIT MESSAGE FOR EACH STATE IN THE CASE THE DATA PROVIDED FOR EACH STATE
         ##NEEDS TO HAVE A DIFFERENT SERVICE OUTPUT
 
         ###FIRST IS WORSE
-        if(int(dwn) >= int(meta.critical)):
+        if(int(dwnpct) >= int(meta.critical)):
             stateid = 2
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
+            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
             
         ###WARNINING SHOULD BE OPTIONAL SO HERE WE ONLY PROCESS FOR WARNING IF PRESENT
         elif meta.warning and ((int(dwn) < int(meta.critical)) and (int(dwn) >= int(meta.warning))):
             stateid = 1
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% for {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
+            msg = ('{} - Hostgroup {} has {}% for {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
 
         ###NOT WARNING NOT CRITICAL IT"S OK
         else:
             #EXIT MESSAGE ENHANCEMENT
             stateid = 0
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwn,totalhost))
+            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
         
         ###NOT EVERYONE WANTS PERFDATA (WHY?)
         if meta.perfdata:
@@ -168,7 +175,7 @@ if __name__ == "__main__" :
                 wrn = meta.warning
             else:
                 wrn = ""
-            perfdata = (' | group-down-percent={}%;{};{}; group-total-count={}; group-down-count={};'.format(dwn,wrn,meta.critical,totalhost,stats["recordcount"]))
+            perfdata = (' | group-down-percent={}%;{};{}; group-total-count={}; group-down-count={};'.format(dwnpct,wrn,meta.critical,hostlistcnt,dwncnt))
             msg = msg + perfdata
     
     #UNKNOWNS SERVE A PURPOSE (USE THEM WISELY)

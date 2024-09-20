@@ -1,6 +1,11 @@
-#Version 0.0.1
-1. Initial Release
+#Version 0.0.3
+1. Set the float percentage to 2 places.
+2. Modified the plugin to pull all host status and compare hostgroup members list.
+3. Hosts must now be critical and have the max check attempts reached or exceeded (HARD STATE)
 
 #Version 0.0.2
 1. Modifed the formatting of the exit message.
 2. Set standard exit message across OK, Warning, Critical states.
+
+#Version 0.0.1
+1. Initial Release
