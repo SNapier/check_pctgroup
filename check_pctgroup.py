@@ -8,7 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "check_pctgroup"
-cversion = "0.0.4"
+cversion = "0.0.5"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 ##NAGIOSXI DIRECT API CALL
@@ -122,7 +122,6 @@ if __name__ == "__main__" :
         modhg = "&hostgroup_name={}".format(meta.hostgroup)
         hostgm = nagiosxiGenericAPI("objects","hostgroupmembers",modhg,"get",auth["url"],auth["apikey"])
         hd = hostgm.json()
-
         ##BUILD THE LIST 
         memlst = list()
         hostlistcnt = 0
@@ -137,8 +136,9 @@ if __name__ == "__main__" :
         stats = hoststats.json()
         totalhost = stats["recordcount"]
         for h in stats["hoststatus"]:
-            if h["host_name"] in memlst and h["current_state"] == 1 and h["current_check_attempt"] >= h["max_check_attempts"]:
-                dwncnt += 1    
+            if h["host_name"] in memlst:
+                    if h["current_state"] == "1" and h["current_check_attempt"] >= h["max_check_attempts"]: 
+                        dwncnt += 1    
         
         ##GET THE PERCENTAGE OF DOWN HOSTS
         dwn = (dwncnt / hostlistcnt * 100)
