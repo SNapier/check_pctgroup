@@ -8,7 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "check_pctgroup"
-cversion = "0.0.3"
+cversion = "0.0.4"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 ##NAGIOSXI DIRECT API CALL
@@ -141,10 +141,10 @@ if __name__ == "__main__" :
                 dwncnt += 1    
         
         ##GET THE PERCENTAGE OF DOWN HOSTS
-        dwn = (float(dwncnt) / hostlistcnt * 100)
+        dwn = (dwncnt / hostlistcnt * 100)
         
         #ROUND PERCENTAGE TO ACCOUNT FOR LARGE HOST COUNT
-        dwnpct = round(dwn,2)
+        dwnpct = round(dwn,4)
 
         ##EVALUATE THE RETURNED DATA AND EXIT
         ##I CREATE THE EXIT MESSAGE FOR EACH STATE IN THE CASE THE DATA PROVIDED FOR EACH STATE

@@ -1,3 +1,7 @@
+#Version 0.0.4
+1. removed errant float() from down calculation
+2. Set round to the 4th place for display of down Hosts
+
 #Version 0.0.3
 1. Set the float percentage to 2 places.
 2. Modified the plugin to pull all host status and compare hostgroup members list.
