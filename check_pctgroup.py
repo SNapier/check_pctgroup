@@ -8,7 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "check_pctgroup"
-cversion = "0.0.5"
+cversion = "0.0.6"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 ##NAGIOSXI DIRECT API CALL
@@ -154,20 +154,20 @@ if __name__ == "__main__" :
         if(int(dwnpct) >= int(meta.critical)):
             stateid = 2
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
+            msg = ('{} - Hostgroup {} has {} ({}%) of {} members down.'.format(state,meta.hostgroup.upper(),dwncnt,dwnpct,hostlistcnt))
             
         ###WARNINING SHOULD BE OPTIONAL SO HERE WE ONLY PROCESS FOR WARNING IF PRESENT
         elif meta.warning and ((int(dwn) < int(meta.critical)) and (int(dwn) >= int(meta.warning))):
             stateid = 1
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% for {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
+            msg = ('{} - Hostgroup {} has {} ({}%) of {} members down.'.format(state,meta.hostgroup.upper(),dwncnt,dwnpct,hostlistcnt))
 
         ###NOT WARNING NOT CRITICAL IT"S OK
         else:
             #EXIT MESSAGE ENHANCEMENT
             stateid = 0
             state = checkStateFromCode(stateid)
-            msg = ('{} - Hostgroup {} has {}% of {} members down.'.format(state,meta.hostgroup.upper(),dwnpct,hostlistcnt))
+            msg = ('{} - Hostgroup {} has {} ({}%) of {} members down.'.format(state,meta.hostgroup.upper(),dwncnt,dwnpct,hostlistcnt))
         
         ###NOT EVERYONE WANTS PERFDATA (WHY?)
         if meta.perfdata:

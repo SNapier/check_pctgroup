@@ -1,3 +1,6 @@
+#VERSION 0.0.6
+1. Modified the check output message format to include the down count for the host group
+
 #VERSION 0.0.5
 1. Fixed typo in the comparison portion of the down count the value should have been in quotes
 2. Moved the state comparison to be after the in list.
